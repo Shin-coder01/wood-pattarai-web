@@ -1,0 +1,895 @@
+.page {
+  --lamp-color: #ffb36b;
+  --light-intensity: 0.558;
+  --beam-width: 710px;
+  --aim-angle: 0deg;
+  --aim-shift: 0px;
+  --lamp-x: 0px;
+  --swing-angle: 0rad;
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100svh;
+  min-height: 560px;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+  background: #010204;
+  color: #f4f5f8;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.utilityBar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #010204;
+  color: rgba(244, 245, 248, 0.5);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.utilityBar a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.utilityBar a:hover,
+.utilityBar a:focus-visible {
+  color: #fff;
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(45, 53, 70, 0.17), transparent 34%),
+    #010204;
+  touch-action: pan-y;
+}
+
+.stage::after {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, transparent 46%, rgba(0, 0, 0, 0.38) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.13), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.31));
+  content: "";
+  mix-blend-mode: multiply;
+}
+
+.ambientGrid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 85%);
+}
+
+.lightPool {
+  position: absolute;
+  z-index: 2;
+  top: 52%;
+  left: calc(50% + var(--aim-shift));
+  width: min(120vw, 1500px);
+  height: min(100vh, 880px);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--lamp-color) 28%, transparent), transparent 69%);
+  opacity: var(--pool-intensity);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 220ms ease, left 180ms ease-out;
+  mix-blend-mode: screen;
+}
+
+.surface {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: min(calc(100vw - 88px), 1220px);
+  height: min(66vh, 720px);
+  min-height: 520px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 27px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    radial-gradient(circle at 74% 28%, color-mix(in srgb, var(--lamp-color) 8%, transparent), transparent 31%),
+    linear-gradient(140deg, #080a10 0%, #05060a 56%, #080811 100%);
+  background-size: 56px 56px, 56px 56px, auto, auto;
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.58), inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  transform: perspective(1800px) rotateX(0.35deg);
+}
+
+.surface::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.28) 0.7px, transparent 0.7px);
+  background-size: 7px 7px;
+  content: "";
+  opacity: 0.11;
+  mask-image: linear-gradient(145deg, #000, transparent 70%);
+}
+
+.surface::after {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: calc(50% + var(--aim-shift));
+  width: 130%;
+  height: 130%;
+  pointer-events: none;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--lamp-color) 26%, transparent), transparent 66%);
+  content: "";
+  opacity: var(--surface-intensity);
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  transition: opacity 220ms ease, left 180ms ease-out;
+}
+
+.pageHeader,
+.pageMain,
+.pageFooter {
+  position: relative;
+  z-index: 2;
+}
+
+.pageHeader {
+  display: flex;
+  height: 76px;
+  flex: 0 0 76px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.pageBrand,
+.pageStatus {
+  display: flex;
+  align-items: center;
+}
+
+.pageBrand {
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 780;
+  letter-spacing: -0.03em;
+}
+
+.pageLogo {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: #f4f5f8;
+  color: #080a10;
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.brandSuffix {
+  margin-left: 2px;
+  color: rgba(238, 240, 247, 0.42);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+.pageStatus {
+  gap: 9px;
+  color: rgba(239, 241, 247, 0.54);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+}
+
+.pageStatus > span,
+.powerToggle > span {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #f0a45f;
+  box-shadow: 0 0 16px #f0a45f;
+}
+
+.pageMain {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.55fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 64px);
+  padding: 35px 48px 30px;
+}
+
+.pageCopy {
+  min-width: 0;
+}
+
+.pageKicker {
+  margin: 0 0 20px;
+  color: color-mix(in srgb, var(--lamp-color) 86%, white);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+}
+
+.pageCopy h1 {
+  max-width: 760px;
+  margin: 0;
+  color: #f7f7fa;
+  font-size: clamp(48px, 5.2vw, 72px);
+  font-weight: 670;
+  letter-spacing: -0.067em;
+  line-height: 0.94;
+}
+
+.pageCopy h1 span {
+  color: rgba(247, 247, 250, 0.55);
+}
+
+.pageSubtitle {
+  max-width: 650px;
+  margin: 22px 0 0;
+  color: transparent;
+  background: linear-gradient(90deg, #ffb457 0%, #ff6f65 44%, #d27fff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 520;
+  letter-spacing: -0.027em;
+  line-height: 1.35;
+}
+
+.concepts {
+  margin-top: 36px;
+}
+
+.conceptList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.conceptList button {
+  display: inline-flex;
+  min-width: 96px;
+  height: 37px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: rgba(246, 247, 251, 0.57);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 620;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.conceptList button span {
+  color: rgba(246, 247, 251, 0.24);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8px;
+}
+
+.conceptList button:hover,
+.conceptList button:focus-visible,
+.conceptList button.isActive {
+  border-color: color-mix(in srgb, var(--lamp-color) 54%, transparent);
+  background: color-mix(in srgb, var(--lamp-color) 11%, transparent);
+  color: #fff;
+}
+
+.conceptDescription {
+  min-height: 40px;
+  margin: 14px 0 0;
+  color: rgba(238, 240, 247, 0.46);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.conceptDescription span {
+  margin-right: 10px;
+  color: rgba(246, 247, 251, 0.84);
+  font-weight: 620;
+}
+
+.lightControls {
+  align-self: center;
+  width: 100%;
+  padding: 21px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 18px;
+  background: rgba(13, 15, 21, 0.91);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+}
+
+.controlHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.controlHeading p,
+.controlHeading span {
+  margin: 0;
+}
+
+.controlHeading p {
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+}
+
+.controlHeading div > span {
+  display: block;
+  margin-top: 6px;
+  color: rgba(237, 239, 246, 0.34);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.15em;
+}
+
+.powerToggle {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(244, 245, 249, 0.45);
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.powerToggle > span {
+  background: #656974;
+  box-shadow: none;
+}
+
+.powerToggle.powerOn {
+  border-color: color-mix(in srgb, var(--lamp-color) 40%, transparent);
+  color: #fff;
+}
+
+.powerToggle.powerOn > span {
+  background: var(--lamp-color);
+  box-shadow: 0 0 12px var(--lamp-color);
+}
+
+.controlRow {
+  display: block;
+  margin-top: 17px;
+}
+
+.controlLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.controlLabel b,
+.controlLabel output {
+  color: rgba(244, 245, 249, 0.66);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8px;
+  font-weight: 550;
+  letter-spacing: 0.11em;
+}
+
+.controlLabel output {
+  color: rgba(244, 245, 249, 0.86);
+  text-align: right;
+}
+
+.controlRow input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin: 0;
+  border-radius: 999px;
+  accent-color: var(--lamp-color);
+  cursor: ew-resize;
+  touch-action: pan-x;
+}
+
+.colorControl {
+  margin-top: 21px;
+}
+
+.colorOptions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.colorOptions > button,
+.customColor {
+  position: relative;
+  display: grid;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: var(--swatch, transparent);
+  cursor: pointer;
+}
+
+.colorOptions > button::after {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  content: "";
+}
+
+.colorOptions > button.isActive::after,
+.colorOptions > button:focus-visible::after {
+  border-color: rgba(255, 255, 255, 0.76);
+}
+
+.customColor {
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.customColor input {
+  position: absolute;
+  inset: -8px;
+  width: 40px;
+  height: 40px;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.resetLight {
+  display: flex;
+  width: 100%;
+  height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.026);
+  color: rgba(245, 246, 250, 0.58);
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.13em;
+}
+
+.resetLight:hover,
+.resetLight:focus-visible {
+  border-color: color-mix(in srgb, var(--lamp-color) 35%, transparent);
+  color: #fff;
+}
+
+.pageFooter {
+  display: grid;
+  height: 68px;
+  flex: 0 0 68px;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 0 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(239, 241, 247, 0.28);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 7px;
+  letter-spacing: 0.12em;
+}
+
+.pageFooter > p {
+  margin: 0;
+}
+
+.pageFooter > p:last-child {
+  text-align: right;
+}
+
+.dragInstruction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dragInstruction div {
+  display: grid;
+  gap: 3px;
+}
+
+.dragInstruction b {
+  color: rgba(247, 248, 252, 0.76);
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.dragInstruction div span {
+  color: rgba(239, 241, 247, 0.34);
+  font-size: 7px;
+  letter-spacing: 0.04em;
+}
+
+.dragOrbit {
+  position: relative;
+  display: block;
+  width: 32px;
+  height: 23px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.21);
+  border-radius: 50%;
+  transform: rotate(-14deg);
+}
+
+.dragOrbit i {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lamp-color);
+  box-shadow: 0 0 8px var(--lamp-color);
+}
+
+.lampHandle {
+  position: absolute;
+  z-index: 4;
+  top: 4px;
+  left: calc(50% + var(--lamp-x));
+  width: 140px;
+  height: 186px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  transform: translateX(-50%) rotate(var(--swing-angle));
+  transform-origin: 50% 5px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lampHandle:active {
+  cursor: grabbing;
+}
+
+.lampHandle:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+.ceilingCap {
+  position: absolute;
+  top: 0;
+  left: 43px;
+  width: 54px;
+  height: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, #262832, #101218);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.5);
+}
+
+.cable {
+  position: absolute;
+  top: 7px;
+  left: 69px;
+  width: 2px;
+  height: 111px;
+  background: linear-gradient(90deg, #0e1016, #555761 48%, #0e1016);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.12);
+}
+
+.lampShade {
+  position: absolute;
+  top: 112px;
+  left: 14px;
+  width: 112px;
+  height: 49px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 52% 52% 42% 42% / 18% 18% 83% 83%;
+  background: linear-gradient(145deg, #272a32, #111319 55%, #08090d);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.52), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.lampShade::after {
+  position: absolute;
+  right: -2px;
+  bottom: -3px;
+  left: -2px;
+  height: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: #191b22;
+  content: "";
+}
+
+.bulb {
+  position: absolute;
+  top: 151px;
+  left: 63px;
+  width: 15px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff5d9 0 16%, color-mix(in srgb, var(--lamp-color) 90%, white) 42%, transparent 100%);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--lamp-color) 82%, transparent), 0 0 46px color-mix(in srgb, var(--lamp-color) 46%, transparent);
+  opacity: var(--bulb-opacity);
+}
+
+.beam {
+  position: absolute;
+  top: 160px;
+  left: 70px;
+  width: var(--beam-width);
+  height: max(100svh, 700px);
+  pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--lamp-color) 32%, transparent), color-mix(in srgb, var(--lamp-color) 11%, transparent) 35%, transparent 87%);
+  clip-path: polygon(49.8% 0, 50.2% 0, 100% 100%, 0 100%);
+  filter: blur(6px);
+  opacity: var(--beam-opacity);
+  transform: translateX(-50%) rotate(var(--aim-angle));
+  transform-origin: 50% 0;
+  transition: opacity 220ms ease, width 180ms ease-out;
+  mix-blend-mode: screen;
+}
+
+.sceneStatus {
+  position: absolute;
+  z-index: 6;
+  bottom: 18px;
+  left: 50%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(5, 6, 9, 0.76);
+  color: rgba(255, 255, 255, 0.44);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.sceneStatus span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--lamp-color);
+  box-shadow: 0 0 12px var(--lamp-color);
+}
+
+.page[data-light-enabled="false"] .beam,
+.page[data-light-enabled="false"] .lightPool {
+  opacity: 0.025;
+}
+
+@media (max-width: 760px) {
+  .page {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .utilityBar {
+    min-height: 40px;
+    gap: 12px;
+    padding: 0 12px;
+    font-size: 8px;
+    letter-spacing: 0.045em;
+  }
+
+  .stage {
+    display: block;
+    min-height: calc(100svh - 40px);
+    overflow: hidden;
+    padding: 118px 12px 48px;
+  }
+
+  .surface {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    border-radius: 23px;
+    transform: none;
+  }
+
+  .pageHeader {
+    height: 65px;
+    flex-basis: 65px;
+    padding: 0 18px;
+  }
+
+  .pageBrand {
+    gap: 9px;
+    font-size: 14px;
+  }
+
+  .pageLogo {
+    width: 29px;
+    height: 29px;
+  }
+
+  .brandSuffix {
+    font-size: 7px;
+  }
+
+  .pageStatus {
+    gap: 6px;
+    font-size: 7px;
+    letter-spacing: 0.08em;
+  }
+
+  .pageStatus > span {
+    width: 6px;
+    height: 6px;
+  }
+
+  .pageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 26px;
+    padding: 30px 20px 24px;
+  }
+
+  .pageKicker {
+    margin-bottom: 16px;
+    font-size: 8px;
+  }
+
+  .pageCopy h1 {
+    font-size: clamp(38px, 10vw, 58px);
+    line-height: 0.98;
+  }
+
+  .pageSubtitle {
+    margin-top: 17px;
+    font-size: 16px;
+  }
+
+  .concepts {
+    margin-top: 25px;
+  }
+
+  .conceptList button {
+    min-width: 90px;
+    height: 35px;
+    gap: 7px;
+    padding: 0 10px;
+  }
+
+  .conceptDescription {
+    min-height: 38px;
+    margin-top: 12px;
+    font-size: 11px;
+  }
+
+  .lightControls {
+    padding: 19px;
+  }
+
+  .controlRow {
+    margin-top: 17px;
+  }
+
+  .pageFooter {
+    height: auto;
+    flex-basis: auto;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .pageFooter > p:first-child {
+    display: none;
+  }
+
+  .pageFooter > p:last-child {
+    max-width: 112px;
+    line-height: 1.6;
+  }
+
+  .dragInstruction {
+    gap: 8px;
+  }
+
+  .dragInstruction div span {
+    max-width: 150px;
+    line-height: 1.5;
+  }
+
+  .lampHandle {
+    top: 3px;
+    left: calc(55% + var(--lamp-x));
+  }
+
+  .sceneStatus {
+    top: 78px;
+    bottom: auto;
+    font-size: 7px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 380px) {
+  .utilityBar {
+    font-size: 7px;
+  }
+
+  .pageHeader {
+    padding: 0 14px;
+  }
+
+  .pageStatus {
+    font-size: 6px;
+  }
+
+  .pageMain {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .pageFooter > p:last-child {
+    max-width: 90px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .utilityBar a,
+  .lightPool,
+  .surface::after,
+  .conceptList button,
+  .beam {
+    transition-duration: 0.01ms;
+  }
+}
