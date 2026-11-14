@@ -96,6 +96,11 @@
   transition: opacity 160ms ease;
 }
 
+.header nav a,
+.shopNavigation > summary {
+  font-size: 12px;
+}
+
 .shopNavigation {
   position: relative;
 }
